@@ -138,10 +138,20 @@
       calcularProporcao();
     }
 
+    
     function calcularProporcao() {
       const posto = document.getElementById("posto").value;
       const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
-      if (!posto || isNaN(valorDigitado)) return;
+      if (!posto || isNaN(valorDigitado)) {
+        document.getElementById("resultado").innerHTML = `
+          <p><strong>Ano estimado da tabela:</strong> —</p>
+          <p><strong>Valor da VPE para esse ano:</strong> —</p>
+          <p><strong>VPE líquida:</strong> —</p>
+          <p><strong>Proporção estimada recebida:</strong> —</p>
+          <p><strong>Erro:</strong> —</p>
+        `;
+        return;
+      }
 
       const anosValores = tabelaVPE[posto];
       let melhorAno = "";
@@ -180,6 +190,7 @@
         <p><strong>Erro:</strong> R$ ${menorErro.toFixed(2)}</p>
       `;
     }
+
       const posto = document.getElementById("posto").value;
       const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
       if (!posto || isNaN(valorDigitado)) return;
