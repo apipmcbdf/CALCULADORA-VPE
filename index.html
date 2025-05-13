@@ -89,7 +89,13 @@
   </div>
 
   <script>
-    const gfm = {
+    const gfm = {};
+const oficiaisGFM = ["Coronel", "Tenente-Coronel", "Major", "Capitão", "Primeiro-Tenente", "Segundo-Tenente"];
+const gfmOficial = 842.23;
+const gfmDemais = 561.49;
+for (let posto of Object.keys(tabelaVPE)) {
+  gfm[posto] = oficiaisGFM.includes(posto) ? gfmOficial : gfmDemais;
+}
       "Coronel": 842.23,
       "Tenente-Coronel": 842.23,
       "Major": 842.23,
