@@ -143,6 +143,47 @@
       const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
       if (!posto || isNaN(valorDigitado)) return;
 
+      const anosValores = tabelaVPE[posto];
+      let melhorAno = "";
+      let melhorVPE = 0;
+      let melhorLiquido = 0;
+      let melhorFracao = "~";
+      let melhorTeorico = 0;
+      let menorErro = Number.POSITIVE_INFINITY;
+
+      const valorGEFM = gefm[posto] || 0;
+      const valorGFM = gfm[posto] || 0;
+
+      for (const [ano, valorVPE] of Object.entries(anosValores)) {
+        const liquido = valorVPE - valorGEFM - valorGFM;
+        for (let denom = 1; denom <= 50; denom++) {
+          for (let numer = 1; numer <= denom; numer++) {
+            const valorTeorico = liquido * (numer / denom);
+            const erro = Math.abs(valorTeorico - valorDigitado);
+            if (erro < menorErro) {
+              menorErro = erro;
+              melhorAno = ano;
+              melhorVPE = valorVPE;
+              melhorLiquido = liquido;
+              melhorFracao = numer + "/" + denom;
+              melhorTeorico = valorTeorico;
+            }
+          }
+        }
+      }
+
+      document.getElementById("resultado").innerHTML = `
+        <p><strong>Ano estimado da tabela:</strong> ${melhorAno}</p>
+        <p><strong>Valor da VPE para esse ano:</strong> R$ ${melhorVPE.toFixed(2)}</p>
+        <p><strong>VPE líquida:</strong> R$ ${melhorLiquido.toFixed(2)}</p>
+        <p><strong>Proporção estimada recebida:</strong> ${melhorFracao} (≈ R$ ${melhorTeorico.toFixed(2)})</p>
+        <p><strong>Erro:</strong> R$ ${menorErro.toFixed(2)}</p>
+      `;
+    }
+      const posto = document.getElementById("posto").value;
+      const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
+      if (!posto || isNaN(valorDigitado)) return;
+
       const anos = Object.keys(tabelaVPE[posto]);
       const anoAtual = anos[anos.length - 1];
       const valorVPE = tabelaVPE[posto][anoAtual];
