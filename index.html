@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Calculadora VPE</title>
   <style>
     body {
@@ -85,35 +85,26 @@
     <div class="output" id="resultado">
       <p><strong>Ano estimado da tabela:</strong> —</p>
       <p><strong>Valor da VPE para esse ano:</strong> —</p>
+      <p><strong>VPE líquida:</strong> —</p>
       <p><strong>Proporção estimada recebida:</strong> —</p>
+      <p><strong>Erro:</strong> —</p>
     </div>
   </div>
 
   <script>
     // GEFM fixo
     const gefm = {
-      "Coronel": 3036.63,
-      "Tenente-Coronel": 2920.89,
-      "Major": 2485.61,
-      "Capitão": 2046.67,
-      "Primeiro-Tenente": 1702.92,
-      "Segundo-Tenente": 1585.51,
-      "Aspirante a Oficial": 1386.17,
-      "Cadete (último ano)": 520.65,
-      "Cadete (demais anos)": 411.44,
-      "Subtenente": 1347.72,
-      "Primeiro-Sargento": 1192.72,
-      "Segundo-Sargento": 955.13,
-      "Terceiro-Sargento": 866.64,
-      "Cabo": 671.13,
-      "Soldado - 1ª Classe": 608.08,
-      "Soldado - 2ª Classe": 411.44
+      "Coronel": 3036.63, "Tenente-Coronel": 2920.89, "Major": 2485.61, "Capitão": 2046.67,
+      "Primeiro-Tenente": 1702.92, "Segundo-Tenente": 1585.51, "Aspirante a Oficial": 1386.17,
+      "Cadete (último ano)": 520.65, "Cadete (demais anos)": 411.44, "Subtenente": 1347.72,
+      "Primeiro-Sargento": 1192.72, "Segundo-Sargento": 955.13, "Terceiro-Sargento": 866.64,
+      "Cabo": 671.13, "Soldado - 1ª Classe": 608.08, "Soldado - 2ª Classe": 411.44
     };
 
-    // GFM dinâmico
+    // GFM
     const gfm = {};
     const oficiais = ["Coronel", "Tenente-Coronel", "Major", "Capitão", "Primeiro-Tenente", "Segundo-Tenente"];
-    for (const posto in tabelaVPE) {
+    for (let posto in tabelaVPE) {
       gfm[posto] = oficiais.includes(posto) ? 842.23 : 561.49;
     }
 
@@ -138,7 +129,6 @@
       calcularProporcao();
     }
 
-    
     function calcularProporcao() {
       const posto = document.getElementById("posto").value;
       const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
@@ -154,15 +144,10 @@
       }
 
       const anosValores = tabelaVPE[posto];
-      let melhorAno = "";
-      let melhorVPE = 0;
-      let melhorLiquido = 0;
-      let melhorFracao = "~";
-      let melhorTeorico = 0;
-      let menorErro = Number.POSITIVE_INFINITY;
-
       const valorGEFM = gefm[posto] || 0;
       const valorGFM = gfm[posto] || 0;
+      let melhorAno = "", melhorVPE = 0, melhorLiquido = 0, melhorFracao = "~";
+      let melhorTeorico = 0, menorErro = Number.POSITIVE_INFINITY;
 
       for (const [ano, valorVPE] of Object.entries(anosValores)) {
         const liquido = valorVPE - valorGEFM - valorGFM;
@@ -188,44 +173,6 @@
         <p><strong>VPE líquida:</strong> R$ ${melhorLiquido.toFixed(2)}</p>
         <p><strong>Proporção estimada recebida:</strong> ${melhorFracao} (≈ R$ ${melhorTeorico.toFixed(2)})</p>
         <p><strong>Erro:</strong> R$ ${menorErro.toFixed(2)}</p>
-      `;
-    }
-
-      const posto = document.getElementById("posto").value;
-      const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
-      if (!posto || isNaN(valorDigitado)) return;
-
-      const anos = Object.keys(tabelaVPE[posto]);
-      const anoAtual = anos[anos.length - 1];
-      const valorVPE = tabelaVPE[posto][anoAtual];
-      const valorGEFM = gefm[posto] || 0;
-      const valorGFM = gfm[posto] || 0;
-      const liquido = valorVPE - valorGEFM - valorGFM;
-      const proporcaoReal = valorDigitado / liquido;
-
-      const fracoes = {
-        "1/1": 1.0,
-        "1/2": 0.5,
-        "1/3": 0.3333,
-        "1/4": 0.25,
-        "1/5": 0.2,
-        "1/6": 0.1667
-      };
-
-      let fracaoMaisProxima = "~";
-      let valorEsperado = null;
-      for (let [fracao, valor] of Object.entries(fracoes)) {
-        if (Math.abs(proporcaoReal - valor) <= 0.03) {
-          fracaoMaisProxima = fracao;
-          valorEsperado = (liquido * valor).toFixed(2);
-          break;
-        }
-      }
-
-      document.getElementById("resultado").innerHTML = `
-        <p><strong>Ano estimado da tabela:</strong> ${anoAtual}</p>
-        <p><strong>Valor da VPE para esse ano:</strong> R$ ${valorVPE.toFixed(2)}</p>
-        <p><strong>Proporção estimada recebida:</strong> ${fracaoMaisProxima} ${valorEsperado ? `(≈ R$ ${valorEsperado})` : ""}</p>
       `;
     }
   </script>
