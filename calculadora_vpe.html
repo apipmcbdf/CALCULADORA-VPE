@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora VPE</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      padding: 30px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #1e293b;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #334155;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+    .output {
+      margin-top: 20px;
+      background: #e2e8f0;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .output p {
+      margin: 8px 0;
+    }
+  </style>
+  <script src="tabelaVPE.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Calculadora VPE</h2>
+
+    <label for="posto">Posto ou Graduação</label>
+    <select id="posto" onchange="atualizarValores()">
+      <option value="">Selecione...</option>
+      <option value="Coronel">Coronel</option>
+      <option value="Tenente-Coronel">Tenente-Coronel</option>
+      <option value="Major">Major</option>
+      <option value="Capitão">Capitão</option>
+      <option value="Primeiro-Tenente">Primeiro-Tenente</option>
+      <option value="Segundo-Tenente">Segundo-Tenente</option>
+      <option value="Aspirante a Oficial">Aspirante a Oficial</option>
+      <option value="Cadete (último ano)">Cadete (último ano)</option>
+      <option value="Cadete (demais anos)">Cadete (demais anos)</option>
+      <option value="Subtenente">Subtenente</option>
+      <option value="Primeiro-Sargento">Primeiro-Sargento</option>
+      <option value="Segundo-Sargento">Segundo-Sargento</option>
+      <option value="Terceiro-Sargento">Terceiro-Sargento</option>
+      <option value="Cabo">Cabo</option>
+      <option value="Soldado - 1ª Classe">Soldado - 1ª Classe</option>
+      <option value="Soldado - 2ª Classe">Soldado - 2ª Classe</option>
+    </select>
+
+    <div class="output" id="valores">
+      <p><strong>VPE Atual:</strong> —</p>
+      <p><strong>GFM:</strong> —</p>
+      <p><strong>GEFM:</strong> —</p>
+      <p><strong>VPE Líquida (estimada):</strong> —</p>
+    </div>
+
+    <label for="vpeContracheque">Valor VPE no contracheque (R$)</label>
+    <input type="number" id="vpeContracheque" placeholder="Ex: 1500.00" step="0.01" onchange="calcularProporcao()"/>
+
+    <div class="output" id="resultado">
+      <p><strong>Ano estimado da tabela:</strong> —</p>
+      <p><strong>Proporção estimada recebida:</strong> —</p>
+    </div>
+  </div>
+
+  <script>
+    const gfm = {
+      "Major": 842.23,
+      "Subtenente": 561.49
+    };
+
+    const gefm = {
+      "Coronel": 3036.63,
+      "Tenente-Coronel": 2920.89,
+      "Major": 2485.61,
+      "Capitão": 2046.67,
+      "Primeiro-Tenente": 1702.92,
+      "Segundo-Tenente": 1585.51,
+      "Aspirante a Oficial": 1386.17,
+      "Cadete (último ano)": 520.65,
+      "Cadete (demais anos)": 411.44,
+      "Subtenente": 1347.72,
+      "Primeiro-Sargento": 1192.72,
+      "Segundo-Sargento": 955.13,
+      "Terceiro-Sargento": 866.64,
+      "Cabo": 671.13,
+      "Soldado - 1ª Classe": 608.08,
+      "Soldado - 2ª Classe": 411.44
+    };
+
+    function atualizarValores() {
+      const posto = document.getElementById("posto").value;
+      const vpeValores = tabelaVPE[posto];
+      const anos = Object.keys(vpeValores || {});
+      const maisRecente = anos[anos.length - 1];
+      const vpeAtual = vpeValores ? vpeValores[maisRecente] : 0;
+      const valorGEFM = gefm[posto] || 0;
+      const valorGFM = gfm[posto] || 0;
+      const liquido = vpeAtual - valorGEFM - valorGFM;
+
+      document.getElementById("valores").innerHTML = `
+        <p><strong>VPE Atual:</strong> R$ ${vpeAtual.toFixed(2)}</p>
+        <p><strong>GFM:</strong> R$ ${valorGFM.toFixed(2)}</p>
+        <p><strong>GEFM:</strong> R$ ${valorGEFM.toFixed(2)}</p>
+        <p><strong>VPE Líquida (estimada):</strong> R$ ${liquido.toFixed(2)}</p>
+      `;
+
+      calcularProporcao();
+    }
+
+    function calcularProporcao() {
+      const posto = document.getElementById("posto").value;
+      const valorDigitado = parseFloat(document.getElementById("vpeContracheque").value);
+      const vpeValores = tabelaVPE[posto];
+      const valorGEFM = gefm[posto] || 0;
+      const valorGFM = gfm[posto] || 0;
+      let anoDetectado = "—";
+      let proporcaoTexto = "—";
+
+      if (vpeValores && !isNaN(valorDigitado)) {
+        for (const [ano, valorBruto] of Object.entries(vpeValores)) {
+          const liquido = valorBruto - valorGEFM - valorGFM;
+          const proporcao = valorDigitado / liquido;
+          if (proporcao >= 0.98 && proporcao <= 1.02) {
+            anoDetectado = ano;
+            proporcaoTexto = "Recebe o valor total da pensão";
+            break;
+          } else if (proporcao >= 0.48 && proporcao <= 0.52) {
+            anoDetectado = ano;
+            proporcaoTexto = "Divide com mais 1 pessoa";
+            break;
+          } else if (proporcao >= 0.31 && proporcao <= 0.36) {
+            anoDetectado = ano;
+            proporcaoTexto = "Divide com mais 2 pessoas";
+            break;
+          }
+        }
+
+        if (anoDetectado === "—") {
+          anoDetectado = "Estimativa fora da margem";
+          proporcaoTexto = "Valor pode estar com desconto diferente ou mais divisões";
+        }
+      }
+
+      document.getElementById("resultado").innerHTML = `
+        <p><strong>Ano estimado da tabela:</strong> ${anoDetectado}</p>
+        <p><strong>Proporção estimada recebida:</strong> ${proporcaoTexto}</p>
+      `;
+    }
+  </script>
+</body>
+</html>
