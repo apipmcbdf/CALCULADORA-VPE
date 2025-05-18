@@ -1,58 +1,81 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <title>Calculadora VPE</title>
+  <script src="tabelaVPE.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      padding: 30px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8fafc;
+      padding: 40px;
+      margin: 0;
     }
+
     .container {
       max-width: 700px;
       margin: auto;
       background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     }
+
     h2 {
       text-align: center;
-      color: #1e293b;
+      color: #0f172a;
+      margin-bottom: 30px;
     }
+
     label {
-      display: block;
-      margin-top: 20px;
-      font-weight: bold;
+      font-weight: 600;
       color: #334155;
+      margin-top: 20px;
+      display: block;
     }
+
     select, input {
       width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-    }
-    .output {
-      margin-top: 20px;
-      background: #e2e8f0;
-      padding: 15px;
+      padding: 12px;
+      margin-top: 10px;
       border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 16px;
     }
+
+    .hidden {
+      display: none;
+    }
+
+    .output {
+      margin-top: 25px;
+      background: #f1f5f9;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #1e293b;
+    }
+
     .output p {
-      margin: 8px 0;
+      margin: 10px 0;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
-  <script src="tabelaVPE.js"></script>
 </head>
 <body>
   <div class="container">
     <h2>Calculadora VPE</h2>
 
     <label for="posto">Posto ou Graduação</label>
-    <select id="posto" onchange="atualizarValores()">
+    <select id="posto" onchange="mostrarEtapa2()">
       <option value="">Selecione...</option>
       <option value="Coronel">Coronel</option>
       <option value="Tenente-Coronel">Tenente-Coronel</option>
@@ -72,27 +95,28 @@
       <option value="Soldado - 2ª Classe">Soldado - 2ª Classe</option>
     </select>
 
-    <div class="output" id="valores">
-      <p><strong>VPE Atual:</strong> —</p>
-      <p><strong>GFM:</strong> —</p>
-      <p><strong>GEFM:</strong> —</p>
-      <p><strong>VPE Líquida (estimada):</strong> —</p>
-    </div>
+    <div id="etapa2" class="hidden fade-in">
+      <div class="output" id="valores">
+        <p><strong>VPE Atual:</strong> —</p>
+        <p><strong>GFM:</strong> —</p>
+        <p><strong>GEFM:</strong> —</p>
+        <p><strong>VPE Líquida (estimada):</strong> —</p>
+      </div>
 
-    <label for="vpeContracheque">Valor VPE no contracheque (R$)</label>
-    <input type="number" id="vpeContracheque" placeholder="Ex: 1500.00" step="0.01" onchange="calcularProporcao()"/>
+      <label for="vpeContracheque">Valor VPE no contracheque (R$)</label>
+      <input type="number" id="vpeContracheque" placeholder="Ex: 1500.00" step="0.01" onchange="calcularProporcao()"/>
 
-    <div class="output" id="resultado">
-      <p><strong>Ano estimado da tabela:</strong> —</p>
-      <p><strong>Valor da VPE para esse ano:</strong> —</p>
-      <p><strong>VPE líquida:</strong> —</p>
-      <p><strong>Proporção estimada recebida:</strong> —</p>
-      <p><strong>Erro:</strong> —</p>
+      <div class="output" id="resultado">
+        <p><strong>Ano estimado da tabela:</strong> —</p>
+        <p><strong>Valor da VPE para esse ano:</strong> —</p>
+        <p><strong>VPE líquida:</strong> —</p>
+        <p><strong>Proporção estimada recebida:</strong> —</p>
+        <p><strong>Erro:</strong> —</p>
+      </div>
     </div>
   </div>
 
   <script>
-    // GEFM fixo
     const gefm = {
       "Coronel": 3036.63, "Tenente-Coronel": 2920.89, "Major": 2485.61, "Capitão": 2046.67,
       "Primeiro-Tenente": 1702.92, "Segundo-Tenente": 1585.51, "Aspirante a Oficial": 1386.17,
@@ -101,11 +125,22 @@
       "Cabo": 671.13, "Soldado - 1ª Classe": 608.08, "Soldado - 2ª Classe": 411.44
     };
 
-    // GFM
     const gfm = {};
     const oficiais = ["Coronel", "Tenente-Coronel", "Major", "Capitão", "Primeiro-Tenente", "Segundo-Tenente"];
     for (let posto in tabelaVPE) {
       gfm[posto] = oficiais.includes(posto) ? 842.23 : 561.49;
+    }
+
+    function mostrarEtapa2() {
+      const posto = document.getElementById("posto").value;
+      const etapa2 = document.getElementById("etapa2");
+
+      if (posto && tabelaVPE[posto]) {
+        etapa2.classList.remove("hidden");
+        atualizarValores();
+      } else {
+        etapa2.classList.add("hidden");
+      }
     }
 
     function atualizarValores() {
